@@ -5,7 +5,7 @@ import (
 
 	"github.com/ferromera/go-playground/src/domain"
 	"github.com/gin-gonic/gin"
-	"github.com/mercadolibre/shipping-scopes-api/src/api/errors"
+	"github.com/ferromera/go-playground/src/errors"
 )
 
 type TeamController struct {
