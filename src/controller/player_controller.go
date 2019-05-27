@@ -2,19 +2,20 @@ package controller
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/ferromera/go-playground/src/domain"
 	"github.com/ferromera/go-playground/src/errors"
 	"github.com/gin-gonic/gin"
 )
 
-type TeamController struct {
-	Service domain.TeamService
+type PlayerController struct {
+	Service domain.PlayerService
 }
 
-func (tc *TeamController) Get(c *gin.Context) {
+func (tc *PlayerController) Get(c *gin.Context) {
 	id := c.Param("id")
-	team, err := tc.Service.GetTeam(c, id)
+	player, err := tc.Service.GetPlayer(c, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, errors.ApiError{
 			Message:  err.Error(),
@@ -24,44 +25,45 @@ func (tc *TeamController) Get(c *gin.Context) {
 		})
 		return
 	}
-	if team == nil {
+	if player == nil {
 		c.JSON(http.StatusNotFound, errors.ApiError{
-			Message:  "Team not found",
+			Message:  "Player not found",
 			ErrorStr: http.StatusText(http.StatusNotFound),
 			Status:   http.StatusNotFound,
 			Cause:    "Not Found",
 		})
 		return
 	}
-	c.JSON(http.StatusOK, team)
+	c.JSON(http.StatusOK, player)
 }
-func (tc *TeamController) GetAll(c *gin.Context) {
+// func (tc *PlayerController) ValidateFilter(c *gin.Context) {
+// 	minOverallQuery := c.Query("minOverall"))
+// 	maxOverallQuery := c.Query("maxOverall"))
+// 	var minOverall int
+// 	var maxOverall int
+// 	if minOverallQuery == "" {
+// 		minOverall = 0
+// 	}else{
+// 		minOverall, err = strconv.Atoi(minOverallQuery)
+// 		if err != nil{
+// 			return &errors.ApiError{
+// 				Message:  "invalid site_id",
+// 				ErrorStr: http.StatusText(http.StatusBadRequest),
+// 				Status:   http.StatusBadRequest,
+// 				Cause:    err.Error(),
+// 			}
+// 		}
+// 	}
+// 	maxOverall, _ := strconv.Atoi(c.Query("maxOverall"))
+// }
 
-	teams, err := tc.Service.GetAllTeams(c)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, errors.ApiError{
-			Message:  err.Error(),
-			ErrorStr: http.StatusText(http.StatusInternalServerError),
-			Status:   http.StatusInternalServerError,
-			Cause:    err.Error(),
-		})
-		return
+func (tc *PlayerController) GetFilter(c *gin.Context) {
+	minOverall, _ := strconv.Atoi(c.Query("minOverall"))
+	maxOverall, _ := strconv.Atoi(c.Query("maxOverall"))
+	if maxOverall == 0 {
+		maxOverall = 100
 	}
-	if teams == nil {
-		c.JSON(http.StatusNotFound, errors.ApiError{
-			Message:  "Teams not found",
-			ErrorStr: http.StatusText(http.StatusNotFound),
-			Status:   http.StatusNotFound,
-			Cause:    "Not Found",
-		})
-		return
-	}
-	c.JSON(http.StatusOK, teams)
-}
-
-func (tc *TeamController) GetPlayers(c *gin.Context) {
-	id := c.Param("id")
-	players, err := tc.Service.GetPlayers(c, id)
+	players, err := tc.Service.GetPlayers(c, minOverall, maxOverall)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, errors.ApiError{
 			Message:  err.Error(),
@@ -82,8 +84,7 @@ func (tc *TeamController) GetPlayers(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, players)
 }
-
-func (tc *TeamController) Load(c *gin.Context) {
+func (tc *PlayerController) Load(c *gin.Context) {
 
 	count, err := tc.Service.Load(c)
 	if err != nil {

@@ -18,6 +18,15 @@ func getTeamController() *controller.TeamController {
 		},
 	}
 }
+func getPlayerController() *controller.PlayerController {
+	return &controller.PlayerController{
+		Service: &service.PlayerService{
+			DAO: &dao.PlayerDao{
+				Session: getSession(),
+			},
+		},
+	}
+}
 
 func getSession() *mgo.Session {
 	session, err := mgo.Dial("localhost")

@@ -35,13 +35,13 @@ func (td *TeamDao) GetTeam(ctx context.Context, id string) (*domain.Team, error)
 
 }
 
-func (td *TeamDao) Load(ctx context.Context) (*dto.TeamsLoaded, error) {
+func (td *TeamDao) Load(ctx context.Context) (*dto.ItemCount, error) {
 	c := td.Session.DB("football").C("teams")
 	c.RemoveAll(nil)
 
 	csvFile, _ := os.Open("../resources/teams.csv")
 	reader := csv.NewReader(bufio.NewReader(csvFile))
-	teams := dto.TeamsLoaded{Count: 0}
+	teams := dto.ItemCount{Count: 0}
 	for {
 		line, err := reader.Read()
 		if err == io.EOF {
@@ -64,4 +64,33 @@ func (td *TeamDao) Load(ctx context.Context) (*dto.TeamsLoaded, error) {
 		teams.Count++
 	}
 	return &teams, nil
+}
+
+func (td *TeamDao) GetAllTeams(ctx context.Context) ([]*domain.Team, error) {
+
+	c := td.Session.DB("football").C("teams")
+	var results []*domain.Team
+	e := c.Find(nil).All(&results)
+	if e != nil && e != mgo.ErrNotFound {
+		return nil, errors.New(e.Error())
+	}
+	if e == mgo.ErrNotFound {
+		return nil, nil
+	}
+
+	return results, nil
+}
+
+func (td *TeamDao) GetPlayers(ctx context.Context, id string) ([]*domain.Player, error) {
+	c := td.Session.DB("football").C("players")
+	var results []*domain.Player
+	e := c.Find(bson.M{"team": id}).All(&results)
+	if e != nil && e != mgo.ErrNotFound {
+		return nil, errors.New(e.Error())
+	}
+	if e == mgo.ErrNotFound {
+		return nil, nil
+	}
+
+	return results, nil
 }

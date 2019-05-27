@@ -13,6 +13,8 @@ type Team struct {
 }
 type TeamService interface {
 	GetTeam(ctx context.Context, id string) (*Team, error)
-	Load(ctx context.Context) (*dto.TeamsLoaded, error)
+	GetAllTeams(ctx context.Context) ([]*Team, error)
+	GetPlayers(ctx context.Context, id string) ([]*Player, error)
+	Load(ctx context.Context) (*dto.ItemCount, error)
 }
 

@@ -1,5 +1,5 @@
 package dto
 
-type TeamsLoaded struct {
+type ItemCount struct {
 	Count int `json:"count"`
 }
