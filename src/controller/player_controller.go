@@ -36,34 +36,54 @@ func (tc *PlayerController) Get(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, player)
 }
-// func (tc *PlayerController) ValidateFilter(c *gin.Context) {
-// 	minOverallQuery := c.Query("minOverall"))
-// 	maxOverallQuery := c.Query("maxOverall"))
-// 	var minOverall int
-// 	var maxOverall int
-// 	if minOverallQuery == "" {
-// 		minOverall = 0
-// 	}else{
-// 		minOverall, err = strconv.Atoi(minOverallQuery)
-// 		if err != nil{
-// 			return &errors.ApiError{
-// 				Message:  "invalid site_id",
-// 				ErrorStr: http.StatusText(http.StatusBadRequest),
-// 				Status:   http.StatusBadRequest,
-// 				Cause:    err.Error(),
-// 			}
-// 		}
-// 	}
-// 	maxOverall, _ := strconv.Atoi(c.Query("maxOverall"))
-// }
+func (tc *PlayerController) validateFilter(c *gin.Context) error {
+	minOverallQuery := c.Query("minOverall")
+	maxOverallQuery := c.Query("maxOverall")
+	var minOverall int
+	var maxOverall int
+	if minOverallQuery == "" {
+		minOverall = 0
+	}else{
+		var err error
+		minOverall, err = strconv.Atoi(minOverallQuery)
+		if err != nil{
+			return &errors.ApiError{
+				Message:  "invalid minOverall",
+				ErrorStr: http.StatusText(http.StatusBadRequest),
+				Status:   http.StatusBadRequest,
+				Cause:    err.Error(),
+			}
+		}
+	}
+	if maxOverallQuery == "" {
+		maxOverall = 100
+	}else{
+		var err error
+		maxOverall, err = strconv.Atoi(maxOverallQuery)
+		if err != nil{
+			return &errors.ApiError{
+				Message:  "invalid maxOverall",
+				ErrorStr: http.StatusText(http.StatusBadRequest),
+				Status:   http.StatusBadRequest,
+				Cause:    err.Error(),
+			}
+		}
+	}
+	c.Set("maxOverall",maxOverall)
+	c.Set("minOverall",minOverall)
+	return nil
+}
 
 func (tc *PlayerController) GetFilter(c *gin.Context) {
-	minOverall, _ := strconv.Atoi(c.Query("minOverall"))
-	maxOverall, _ := strconv.Atoi(c.Query("maxOverall"))
-	if maxOverall == 0 {
-		maxOverall = 100
+	err := tc.validateFilter(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest,err)
 	}
-	players, err := tc.Service.GetPlayers(c, minOverall, maxOverall)
+
+	minOverall, _ := c.Get("minOverall")
+	maxOverall, _ := c.Get("maxOverall")
+
+	players, err := tc.Service.GetPlayers(c, minOverall.(int), maxOverall.(int))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, errors.ApiError{
 			Message:  err.Error(),
