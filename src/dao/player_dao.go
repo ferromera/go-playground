@@ -56,6 +56,7 @@ func (td *PlayerDao) Load(ctx context.Context) (*dto.ItemCount, error) {
 	csvFile, _ := os.Open("../resources/players.csv")
 	reader := csv.NewReader(bufio.NewReader(csvFile))
 	players := dto.ItemCount{Count: 0}
+	id := 1
 	for {
 		line, err := reader.Read()
 		if err == io.EOF {
@@ -63,18 +64,18 @@ func (td *PlayerDao) Load(ctx context.Context) (*dto.ItemCount, error) {
 		} else if err != nil {
 			return nil, errors.New(err.Error())
 		}
-		overall, err := strconv.Atoi(line[3])
+		overall, err := strconv.Atoi(line[2])
 		if err != nil {
 			return nil, errors.New(err.Error())
 		}
-		age, err := strconv.Atoi(line[4])
+		age, err := strconv.Atoi(line[3])
 		if err != nil {
 			return nil, errors.New(err.Error())
 		}
 		err = c.Insert(&domain.Player{
-			ID:      line[0],
-			Name:    line[1],
-			Team:    line[2],
+			ID:      strconv.Itoa(id),
+			Name:    line[0],
+			Team:    line[1],
 			Overall: overall,
 			Age:     age,
 		})
@@ -82,6 +83,7 @@ func (td *PlayerDao) Load(ctx context.Context) (*dto.ItemCount, error) {
 			return nil, errors.New(err.Error())
 		}
 		players.Count++
+		id++
 	}
 	return &players, nil
 
